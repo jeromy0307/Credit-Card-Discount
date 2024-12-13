@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>玉山 UNICard 回饋試算</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: center;
+            }
+
+            th {
+                background-color: #f4f4f4;
+            }
+
+            label, input, select, button {
+                margin: 5px;
+            }
+
+            /* 蓋板樣式 */
+            #overlay {
+                display: none;
+                /* 預設隱藏 */
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(211, 211, 211, 0.8);
+                /* 淺灰背景 */
+                z-index: -1;
+                /* 初始 z-index 較低 */
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+            }
+
+            /* 進度條樣式 */
+            #progressBar {
+                width: 80%;
+                height: 30px;
+                background-color: #f3f3f3;
+                border-radius: 15px;
+                overflow: hidden;
+                margin-top: 20px;
+            }
+
+            #progressBarFill {
+                height: 100%;
+                width: 0;
+                background-color: #3498db;
+                text-align: center;
+                color: white;
+                line-height: 30px;
+                border-radius: 15px;
+            }
+
+            #progressText {
+                font-size: 18px;
+                font-weight: bold;
+                color: #333;
+                margin-top: 10px;
+            }
+
+            .red {
+                color: red;
+            }
+
+            .orange {
+                color: #cc8932bb;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>玉山 UNICard 回饋試算</h1>
+        <div>
+            <label for="startAmount">起始金額:</label>
+            <input type="number" id="startAmount" value="50" min="1"/>
+            <br/>
+            <label for="endAmount">結束金額:</label>
+            <input type="number" id="endAmount" value="250" min="1"/>
+            <br/>
+            <label for="cashbackRate">權益加碼回饋:</label>
+            <select id="cashbackRate">
+                <option value="0.02">2%</option>
+                <option value="0.025" selected>2.5%</option>
+                <option value="0.035">3.5%</option>
+            </select>
+            <br/>
+            <button onclick="generateTable()">生成表格</button>
+            <div>請注意權益加碼方案皆有當月回饋上限，<a href="https://github.com/jeromy0307/Credit-Card-Discount/blob/main/%E7%8E%89%E5%B1%B1UNI%20Card.md" style="color: blue;" target="_blank">詳細資訊可參考這裡</a></div>
+        </div>
+        <!-- 動態生成的蓋板與進度動畫 -->
+        <div id="overlay">
+            <div id="progressBar">
+                <div id="progressBarFill"></div>
+            </div>
+            <div id="progressText">計算中: 0%</div>
+        </div>
+        <table id="rewards-table">
+            <thead>
+                <tr>
+                    <th>金額</th>
+                    <th>0.3% 回饋</th>
+                    <th>0.7% 回饋</th>
+                    <th>權益加碼回饋</th>
+                    <th>回饋金額</th>
+                    <th>實際回饋%</th>
+                </tr>
+            </thead>
+            <tbody>
+            <!-- 動態生成的表格數據 -->
+            </tbody>
+        </table>
+        <script>
+            async function generateTable() {
+                const startAmount = parseInt(document.getElementById("startAmount").value);
+                const endAmount = parseInt(document.getElementById("endAmount").value);
+                const cashbackRate = parseFloat(document.getElementById("cashbackRate").value);
+                const tbody = document.querySelector("#rewards-table tbody");
+                const overlay = document.getElementById("overlay");
+                const progressBarFill = document.getElementById("progressBarFill");
+                const progressText = document.getElementById("progressText");
+
+                tbody.innerHTML = "";
+                // 清空表格內容
+                progressText.textContent = "計算中: 0%";
+                // 初始化進度條文字
+                progressBarFill.style.width = '0%';
+                // 初始化進度條
+
+                if (startAmount > endAmount || startAmount <= 0) {
+                    alert("請輸入有效的金額範圍！");
+                    return;
+                }
+
+                overlay.style.display = "flex";
+                // 顯示蓋板
+                overlay.style.zIndex = "9999";
+                // 將蓋板顯示層級提高
+
+                const totalAmounts = endAmount - startAmount + 1;
+                // 要計算的總金額數量
+                let processed = 0;
+
+                // 遍歷範圍生成表格數據
+                for (let amount = startAmount; amount <= endAmount; amount++) {
+                    const cashback_03 = Math.round(amount * 0.003);
+                    const cashback_07 = Math.round(amount * 0.007);
+                    const cashback_custom = Math.round(amount * cashbackRate);
+                    const total_cashback = cashback_03 + cashback_07 + cashback_custom;
+                    let actual_percentage = ((total_cashback / amount) * 100).toFixed(2);
+                    let percentageClass = "";
+
+                    // 條件格式設置
+                    if (actual_percentage === "0.00") {
+                        actual_percentage = "";
+                        // 0% 改為留空
+                    } else if (actual_percentage < Math.max(cashbackRate * 100, 3)) {
+                        percentageClass = "red";
+                        // 小於使用者設定比例或3%設為紅色
+                    } else if (actual_percentage < (cashbackRate * 100) + 1) {
+                        percentageClass = "orange";
+                        // 小於使用者設定比例 + 1% 設為橘色
+                    }
+                    // 動態生成表格列
+                    const row = `
+<tr>
+<td>${amount}</td>
+<td>${cashback_03}</td>
+<td>${cashback_07}</td>
+<td>${cashback_custom}</td>
+<td>${total_cashback}</td>
+<td class="${percentageClass}">${actual_percentage}</td>
+</tr>
+`;
+                    tbody.innerHTML += row;
+
+                    // 更新進度條文字與寬度
+                    processed++;
+                    const progress = ((processed / totalAmounts) * 100).toFixed(0);
+                    progressText.textContent = `計算中: ${progress}%`;
+                    progressBarFill.style.width = `${progress}%`;
+
+                    // 模擬運算延遲
+                    await new Promise(resolve => setTimeout(resolve, 1));
+                }
+
+                // 完成計算後隱藏蓋板並設置較低的z-index
+                overlay.style.display = "none";
+                overlay.style.zIndex = "-1";
+                // 設回較低層級
+            }
+        </script>
+    </body>
+</html>
