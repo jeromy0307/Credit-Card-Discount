@@ -15,6 +15,7 @@
 3. UP選(完成指定任務或以99點e point訂閱)：3.5%(上限2000點，可刷57,142)
 
 **總刷卡金額大於9,900可考慮更換UP選**
+
 [逐筆回饋計算機](https://g.jr.tctc.tk/Credit-Card-Discount/玉山UNI%20Card.md)
 
 ## 加碼特店
