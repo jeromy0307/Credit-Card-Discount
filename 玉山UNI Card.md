@@ -16,7 +16,7 @@
 
 **總刷卡金額大於9,900可考慮更換UP選**
 
-[逐筆回饋計算機](https://g.jr.tctc.tk/Credit-Card-Discount/玉山UNI%20Card.md)
+[逐筆回饋計算機](https://g.jr.tctc.tk/Credit-Card-Discount/unicard.html)
 
 ## 加碼特店
 |類別|指定百大特店|
