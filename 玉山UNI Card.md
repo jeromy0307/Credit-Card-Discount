@@ -16,7 +16,8 @@
 
 **總刷卡金額大於9,900可考慮更換UP選**
 
-[逐筆回饋計算機](https://g.jr.tctc.tk/Credit-Card-Discount/unicard.html)
+[逐筆回饋計算機（表格）](https://g.jr.tctc.tk/Credit-Card-Discount/unicard.html)
+[逐筆回饋計算機（List）](https://g.jr.tctc.tk/Credit-Card-Discount/unicard-list.html)
 
 ## 加碼特店
 |類別|指定百大特店|
