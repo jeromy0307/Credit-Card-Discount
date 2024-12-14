@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>玉山 UNICard 回饋試算</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+label {
+    display: block;
+    font-weight: bold;
+    margin-top: 15px;
+}
+input, select, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+button {
+    background-color: #3498db;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+}
+button:hover {
+    background-color: #2980b9;
+}
+h1 {
+    text-align: center;
+    color: #444;
+}
+.result {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+.result h2 {
+    font-size: 18px;
+    color: #333;
+}
+/* 蓋板樣式 */
+#overlay {
+    display: none; /* 預設隱藏 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(211, 211, 211, 0.8); /* 淺灰背景 */
+    z-index: -1; /* 初始 z-index 較低 */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+/* 進度條樣式 */
+#progressBar {
+    width: 80%;
+    height: 30px;
+    background-color: #f3f3f3;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+#progressBarFill {
+    height: 100%;
+    width: 0;
+    background-color: #3498db;
+    text-align: center;
+    color: white;
+    line-height: 30px;
+    border-radius: 15px;
+}
+#progressText {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>回饋計算</h1>
+    
+    <label for="customRate">權益方案</label>
+    <select id="customRate">
+        <option value="0.02">簡單選：2%</option>
+        <option value="0.025" selected>任意選(8家特店)：2.5%</option>
+        <option value="0.035">UP選(完成指定任務或以99點e point訂閱)：3.5%</option>
+    </select>
+    
+    <label for="customExpense">適用加碼回饋的消費 (用任意非數字字符分隔)</label>
+    <input type="text" id="customExpense" placeholder="例如：100;200,300" />
+    
+    <label for="generalExpense">一般消費 (用任意非數字字符分隔)</label>
+    <input type="text" id="generalExpense" placeholder="例如：150|250,350" />
+    
+    <div style="padding-top: 10px;">請注意權益加碼方案皆有當月回饋上限，<a href="https://github.com/jeromy0307/Credit-Card-Discount/blob/main/%E7%8E%89%E5%B1%B1UNI%20Card.md" style="color: blue;" target="_blank">詳細資訊可參考這裡</a></div>
+
+    <button onclick="calculateRewards()">計算回饋</button>
+
+    <!-- 動態生成的蓋板與進度動畫 -->
+    <div id="overlay">
+        <div id="progressBar">
+            <div id="progressBarFill"></div>
+        </div>
+        <div id="progressText">計算中: 0%</div>
+    </div>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+async function calculateRewards() {
+    const overlay = document.getElementById("overlay");
+    const progressBarFill = document.getElementById("progressBarFill");
+    const progressText = document.getElementById("progressText");
+
+    const customRate = parseFloat(document.getElementById("customRate").value);
+    const customExpensesRaw = document.getElementById("customExpense").value;
+    const generalExpensesRaw = document.getElementById("generalExpense").value;
+
+    // 分割並過濾出有效的數字
+    const customExpenses = customExpensesRaw.split(/\D+/).map(Number).filter(x => !isNaN(x));
+    const generalExpenses = generalExpensesRaw.split(/\D+/).map(Number).filter(x => !isNaN(x));
+
+    let totalCustomExpense = 0;
+    let totalGeneralExpense = 0;
+    let totalCustomReward = 0;
+    let totalGeneralReward = 0;
+
+    let customDetails = "";
+    let generalDetails = "";
+
+    const totalItems = customExpenses.length + generalExpenses.length;
+    let processed = 0;
+
+    // 顯示蓋板
+    overlay.style.display = "flex";
+    overlay.style.zIndex = "9999";
+    progressBarFill.style.width = '0%';
+
+    // 計算特店回饋
+    for (const expense of customExpenses) {
+        const reward03 = Math.round(expense * 0.003);
+        const reward07 = Math.round(expense * 0.007);
+        const rewardCustom = Math.round(expense * customRate);
+        const totalReward = reward03 + reward07 + rewardCustom;
+
+        totalCustomExpense += expense;
+        totalCustomReward += totalReward;
+
+        const rate = ((totalReward / expense) * 100).toFixed(2);
+        customDetails += `${expense}元 回饋金額：${totalReward}元 回饋率：${rate}%\n`;
+
+        // 更新進度條
+        processed++;
+        const progress = ((processed / totalItems) * 100).toFixed(0);
+        progressText.textContent = `計算中: ${progress}%`;
+        progressBarFill.style.width = `${progress}%`;
+        await new Promise(resolve => setTimeout(resolve, 1));
+    }
+
+    // 計算一般回饋
+    for (const expense of generalExpenses) {
+        const reward03 = Math.round(expense * 0.003);
+        const reward07 = Math.round(expense * 0.007);
+        const totalReward = reward03 + reward07;
+
+        totalGeneralExpense += expense;
+        totalGeneralReward += totalReward;
+
+        const rate = ((totalReward / expense) * 100).toFixed(2);
+        generalDetails += `${expense}元 回饋金額：${totalReward}元 回饋率：${rate}%\n`;
+
+        // 更新進度條
+        processed++;
+        const progress = ((processed / totalItems) * 100).toFixed(0);
+        progressText.textContent = `計算中: ${progress}%`;
+        progressBarFill.style.width = `${progress}%`;
+        await new Promise(resolve => setTimeout(resolve, 1));
+    }
+
+    // 隱藏蓋板
+    overlay.style.display = "none";
+    overlay.style.zIndex = "-1";
+
+    // 總回饋率
+    const totalExpense = totalCustomExpense + totalGeneralExpense;
+    const totalReward = totalCustomReward + totalGeneralReward;
+    const totalRate = ((totalReward / totalExpense) * 100).toFixed(2);
+
+    // 顯示結果
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerText = `總消費金額：${totalExpense}元\n總回饋金額：${totalReward}元\n回饋率：${totalRate}%\n\n特店消費總金額：\n消費金額：${totalCustomExpense}元 回饋金額：${totalCustomReward}元 回饋率：${((totalCustomReward / totalCustomExpense) * 100).toFixed(2)}%\n\n一般消費回饋：\n消費金額：${totalGeneralExpense}元 回饋金額：${totalGeneralReward}元 回饋率：${((totalGeneralReward / totalGeneralExpense) * 100).toFixed(2)}%\n\n特店消費回饋：\n${customDetails}\n一般消費回饋：\n${generalDetails}`;
+}
+</script>
+</body>
+</html>
