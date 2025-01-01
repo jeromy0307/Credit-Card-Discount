@@ -143,7 +143,7 @@
             <p>蝦皮購物<br>
             <span style="color: #00a19b;">單筆分期滿額</span><span style="color: #00a19b;">領券</span><span style="color: #00a19b;"><br>
             最高享<span style="color: #f8524c;">3,600元</span>回饋</span><br>
-            <a class="btnLine color-primary mb-2 mr-2" href=" https://www.esunbank.com/zh-tw/personal/credit-card/discount/shopInfo?sno=2100_01" title="前往活動詳情">活動詳情</a>
+            <a class="btnLine color-primary mb-2 mr-2" href="https://www.esunbank.com/zh-tw/personal/credit-card/discount/shopInfo?sno=2100_01" title="前往活動詳情">活動詳情</a>
             </p>
             <br>
             </td>
